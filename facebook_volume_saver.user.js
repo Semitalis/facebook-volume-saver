@@ -5,14 +5,17 @@
 // @license      MIT
 // @author       Semitalis
 // @namespace    https://github.com/Semitalis/
-// @version      1.2
+// @version      1.3
 // @homepage     https://github.com/Semitalis/facebook-volume-saver
 // @downloadURL	 https://raw.githubusercontent.com/Semitalis/facebook-volume-saver/master/facebook_volume_saver.user.js
 // @updateURL    https://raw.githubusercontent.com/Semitalis/facebook-volume-saver/master/facebook_volume_saver.user.js
-// @grant        none
+// @grant        GM_setValue
+// @grant        GM_getValue
 // ==/UserScript==
 /*
 Changelog:
+1.3:
+- use GM_* API for storage
 1.2:
 - cleaned up code a little
 1.1:
@@ -36,26 +39,12 @@ var semi_utils = {
         return typeof v === 'boolean';
     },
     storage : (function(){
-        var storage = localStorage;
         return {
             save : function (key, value){
-                storage[key] = value;
+                GM_setValue(key, value);
             },
             load : function (key, def){
-                var v = storage[key];
-                if(!v){
-                    return def;
-                }
-                if(semi_utils.isFloat(def)){
-                    try{ v = parseFloat(v); } catch(e){ return def; }
-                }
-                if(semi_utils.isInteger(def)){
-                    try{ v = parseInt(v); } catch(e){ return def; }
-                }
-                if(semi_utils.isBool(def)){
-                    return v === "true";
-                }
-                return v;
+                return GM_getValue(key, def);
             }
         };
     }())
@@ -67,7 +56,7 @@ var semi_utils = {
 
     // PRIVATE VARIABLES
     var m = {
-        debug    : true,
+        debug    : false,
         observer : null,
         volume   : semi_utils.storage.load('semi_video_volume', 0.25),
         muted    : semi_utils.storage.load('semi_video_muted', false),
