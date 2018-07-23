@@ -24,7 +24,7 @@ Changelog:
 - initial version
 */
 
-// UTIL FUNCS
+// UTILS
 var semi_utils = {
     isNumber : function(v) {
         return !isNaN(parseFloat(v)) && !isNaN(v - 0);
@@ -82,9 +82,9 @@ var semi_utils = {
                         if(m.current === this){
                             return;
                         }
+                        m.current = this;
                         this.volume = m.volume;
                         this.muted = m.muted;
-                        m.current = this;
                         f.log("[FVS] changed active player: '" + m.current.id + "'");
                     });
                     node.addEventListener('volumechange', function(){
@@ -110,8 +110,6 @@ var semi_utils = {
             }
         },
         init : function(){
-            f.log("[FVS] initialized. volume(" + m.volume + "), muted(" + m.muted + ")");
-
             // setup observer for new DOM elements
             m.observer = new MutationObserver(function(mutations) {
                 mutations.forEach(function(mutation) {
@@ -122,6 +120,8 @@ var semi_utils = {
 
             // check already existing DOM elements
             f.check(document.body.childNodes);
+            
+            f.log("[FVS] initialized. volume(" + m.volume + "), muted(" + m.muted + ")");
         }
     };
 
