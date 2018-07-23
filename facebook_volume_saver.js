@@ -5,8 +5,8 @@
 // @description  Remember Facebook volume
 // @author       Semitalis
 // @match        https://www.facebook.com/*
-// @downloadURL	 https://github.com/Semitalis/facebook-volume-saver/raw/master/facebook_volume_saver.js
-// @updateURL    https://github.com/Semitalis/facebook-volume-saver/raw/master/facebook_volume_saver.js
+// @downloadURL	 https://raw.githubusercontent.com/Semitalis/facebook-volume-saver/master/facebook_volume_saver.js
+// @updateURL    https://raw.githubusercontent.com/Semitalis/facebook-volume-saver/master/facebook_volume_saver.js
 // @license      MIT
 // @grant        none
 // ==/UserScript==
