@@ -7,7 +7,7 @@
 // @namespace    https://github.com/Semitalis/
 // @version      1.3
 // @homepage     https://github.com/Semitalis/facebook-volume-saver
-// @downloadURL	 https://raw.githubusercontent.com/Semitalis/facebook-volume-saver/master/facebook_volume_saver.user.js
+// @downloadURL  https://raw.githubusercontent.com/Semitalis/facebook-volume-saver/master/facebook_volume_saver.user.js
 // @updateURL    https://raw.githubusercontent.com/Semitalis/facebook-volume-saver/master/facebook_volume_saver.user.js
 // @grant        GM_setValue
 // @grant        GM_getValue
