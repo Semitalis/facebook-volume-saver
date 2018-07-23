@@ -7,8 +7,8 @@
 // @namespace    https://github.com/Semitalis/
 // @version      1.0
 // @homepage     https://github.com/Semitalis/facebook-volume-saver
-// @downloadURL	 https://raw.githubusercontent.com/Semitalis/facebook-volume-saver/master/facebook_volume_saver.js
-// @updateURL    https://raw.githubusercontent.com/Semitalis/facebook-volume-saver/master/facebook_volume_saver.js
+// @downloadURL	 https://raw.githubusercontent.com/Semitalis/facebook-volume-saver/master/facebook_volume_saver.user.js
+// @updateURL    https://raw.githubusercontent.com/Semitalis/facebook-volume-saver/master/facebook_volume_saver.user.js
 // @grant        none
 // ==/UserScript==
 
