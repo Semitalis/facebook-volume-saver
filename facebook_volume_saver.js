@@ -1,13 +1,14 @@
 // ==UserScript==
-// @name         Facebook Volume
-// @namespace    http://tampermonkey.net/
-// @version      0.1
-// @description  Remember Facebook volume
-// @author       Semitalis
+// @name         Facebook Volume Saver
+// @description  Remember Facebook video volume
 // @match        https://www.facebook.com/*
+// @license      MIT
+// @author       Semitalis
+// @namespace    https://github.com/Semitalis/
+// @version      1.0
+// @homepage     https://github.com/Semitalis/facebook-volume-saver
 // @downloadURL	 https://raw.githubusercontent.com/Semitalis/facebook-volume-saver/master/facebook_volume_saver.js
 // @updateURL    https://raw.githubusercontent.com/Semitalis/facebook-volume-saver/master/facebook_volume_saver.js
-// @license      MIT
 // @grant        none
 // ==/UserScript==
 
@@ -20,23 +21,17 @@
     }
 
     function storage_save(key, value){
-        localStorage.setItem(key, value);
+        localStorage[key] = value;
     }
 
     function storage_load(key, def){
-        var v;
-        v = localStorage.getItem(key);
-        if(!v){
-            localStorage.setItem(key, def);
-            v = def;
-        }
-        return v;
+        return localStorage[key] || def;
     }
 
     // PRIVATE VARIABLES
     var m = {
         observer : null,
-        volume   : storage_load('semi_video_volume', 0.1)
+        volume   : storage_load('semi_video_volume', 0.25)
     };
 
     // PRIVATE METHODS
