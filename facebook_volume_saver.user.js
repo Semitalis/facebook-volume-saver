@@ -1,19 +1,22 @@
 // ==UserScript==
 // @name         Facebook Volume Saver
 // @description  Remember Facebook video volume
-// @match        https://www.facebook.com/*
+// @include      http*://*facebook*/*
 // @license      MIT
 // @author       Semitalis
 // @namespace    https://github.com/Semitalis/
-// @version      1.4
+// @version      1.5
 // @homepage     https://github.com/Semitalis/facebook-volume-saver
 // @downloadURL  https://raw.githubusercontent.com/Semitalis/facebook-volume-saver/master/facebook_volume_saver.user.js
 // @updateURL    https://raw.githubusercontent.com/Semitalis/facebook-volume-saver/master/facebook_volume_saver.user.js
+// @require      https://code.jquery.com/jquery-3.3.1.min.js#sha256=FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=
 // @grant        GM_setValue
 // @grant        GM_getValue
 // ==/UserScript==
 /*
 Changelog:
+1.5:
+- fixed general issues and added jquery support
 1.4:
 - fixed issues with multiple instances
 1.3:
@@ -25,6 +28,8 @@ Changelog:
 1.0:
 - initial version
 */
+
+var $ = window.jQuery;
 
 // UTILS
 var semi_utils = {
@@ -53,16 +58,19 @@ var semi_utils = {
 };
 
 // MAIN
-(function() {
+$(document).ready(function() {
     'use strict';
 
     // PRIVATE VARIABLES
     var m = {
-        debug    : false,
-        observer : null,
-        volume   : semi_utils.storage.load('semi_video_volume', 0.25),
-        muted    : semi_utils.storage.load('semi_video_muted', false),
-        current  : null
+        debug     : false,
+        observer  : null,
+        volume    : semi_utils.storage.load('fvs_video_volume', 0.25),
+        muted     : semi_utils.storage.load('fvs_video_muted', false),
+        unique_id : 0,
+        url       : '',
+        playing   : false,
+        current   : null
     };
 
     // PRIVATE METHODS
@@ -72,72 +80,94 @@ var semi_utils = {
                 console.log(s);
             }
         },
-        check : function(nodes){
-            var node;
-            for(node of nodes){
-                // recursive check for video nodes
-                f.check(node.childNodes);
-                // found one
-                if(node.nodeName === 'VIDEO'){
-                    // add the handlers just once to each new video node
-                    if(node.semi_fvs === true){
+        on_check : function(){
+            $('video').each(function(){
+                var video = $(this);
+
+                // add the handlers just once to each new video node
+                if(video.attr('fvs_attached') === 'true'){
+                    return;
+                }
+                video.attr('fvs_attached', 'true');
+
+                var id = 'fvs_' + m.unique_id++
+                video.attr('fvs_id', id);
+
+                // add handlers
+                video.on('play', function(){
+                    m.playing = true;
+                    if(m.current === id){
                         return;
                     }
-                    node.semi_fvs = true;
-
-                    // add handlers
-                    node.addEventListener('play', function(){
-                        if(m.current === this){
-                            return;
-                        }
-                        m.current = this;
-                        this.volume = m.volume;
-                        this.muted = m.muted;
-                        f.log("[FVS] changed active player: '" + m.current.id + "'");
-                    });
-                    node.addEventListener('volumechange', function(){
-                        var v;
-                        if(m.current != this){
-                            return;
-                        }
-                        v = this.volume;
-                        if(semi_utils.isNumber(v) && (v !== m.volume)){
-                            m.volume = v;
-                            semi_utils.storage.save('semi_video_volume', v);
-                            f.log("[FVS] volume changed: " + v);
-                        }
-                        v = this.muted;
-                        if(semi_utils.isBool(v) && (v !== m.muted)){
+                    m.current = id;
+                    this.volume = m.volume;
+                    this.muted = m.muted;
+                    f.log("[FVS] changed active player: '" + m.current + "'");
+                });
+                video.on('pause', function(){
+                    m.playing = false;
+                    f.log('[FVS] pause!');
+                });
+                video.on('volumechange', function(){
+                    var v;
+                    if(m.current !== id){
+                        return;
+                    }
+                    v = this.volume;
+                    if(semi_utils.isNumber(v) && (v !== m.volume)){
+                        m.volume = v;
+                        semi_utils.storage.save('fvs_video_volume', v);
+                        f.log("[FVS] volume changed: " + v);
+                    }
+                    v = this.muted;
+                    if(semi_utils.isBool(v) && (v !== m.muted)){
+                        if(m.playing){
                             m.muted = v;
-                            semi_utils.storage.save('semi_video_muted', v);
+                            semi_utils.storage.save('fvs_video_muted', v);
                             f.log("[FVS] muted changed: " + v);
+                        } else {
+                            this.muted = m.muted;
+                            f.log("[FVS] reinforced previous muted state: " + this.muted);
                         }
-                    });
-                }
-            }
+                    }
+                });
+            });
+        },
+        on_dom_change : function(){
+            clearTimeout(m.check_timer);
+            m.check_timer = setTimeout(function(){
+                m.check_timer = null;
+                f.on_check();
+              }, 250);
         },
         init : function(){
             // do this just once
-            if(document.body.semi_fvs === true){
+            var body = $(document.body)
+            if(body.attr('fvs_init') === 'true'){
                 return;
             }
-            document.body.semi_fvs = true;
+            body.attr('fvs_init', 'true');
 
             // setup observer for new DOM elements
             m.observer = new MutationObserver(function(mutations) {
-                mutations.forEach(function(mutation) {
-                    f.check(mutation.addedNodes);
+                mutations.forEach(function() {
+                    f.on_dom_change();
                 });
             });
-            m.observer.observe(document.body, { childList: true, subtree: true });
+            m.observer.observe(document.body, {
+                childList  : true,
+                attributes : true,
+                subtree    : true
+            });
 
-            // check already existing DOM elements
-            f.check(document.body.childNodes);
+            // trigger check for already existing elements
+            f.on_dom_change();
 
+            // all setup
             f.log("[FVS] initialized. volume(" + m.volume + "), muted(" + m.muted + ")");
         }
     };
 
-    // initialize framework
-    window.addEventListener('load', f.init);
-})();
+    // actual ready handler as return value
+    return f.init;
+}());
